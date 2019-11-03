@@ -1,4 +1,4 @@
-.model 	SMALL
+﻿.model 	SMALL
 .stack	200h
 
 SetXYRadius MACRO x0, y0, rad      ; макроопределение для записи начальных и конечных координат
@@ -16,6 +16,7 @@ ENDM
 
 .data
 	cycle dw 0
+	MAX_CYCLE dw ?
 	COLOR db 4
 	ANGLE dw 0
 	X_C dw ?
@@ -24,7 +25,7 @@ ENDM
 	X_RESULT dw ?
 	Y_RESULT dw ?
 	ANGLE_DELTA dw 1
-	
+	MY_PI dw 7 ;~2pi
 .code
 PlotPoint proc	   
 	mov ah, 0Ch		;Функция отрисовки точки
@@ -35,6 +36,11 @@ PlotPoint endp
 
 PlotCircle proc
 	.486
+	;find cycle duration
+	fild RADIUS
+	fimul MY_PI
+	fistp MAX_CYCLE
+	mov ax, MAX_CYCLE
 	my_for:
 		;find x
 		fild ANGLE
@@ -56,7 +62,7 @@ PlotCircle proc
 		fiadd ANGLE_DELTA
 		fistp ANGLE
 		inc cycle
-		cmp cycle, 360	;~360 points for each gradus
+        cmp cycle, ax
 		je end_for	
 		jmp my_for
 	end_for:
@@ -73,8 +79,8 @@ main proc
 	int 10h    ;Включение видеорежима
 	
 	finit	;init coprocessor
-
-	SetXYRadius 320, 175, 100
+                                        
+    	SetXYRadius 320, 175, 150
 	call PlotCircle
 	SetXYRadius 420, 175, 50
 	call PlotCircle
